@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Word, Three Ways</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f2f6fc;
+    --line: #d0e1f3;
+    --ink: #1a1a1a;
+    --muted: #4a5568;
+    --navy: #152b76;
+    --orange: #ff6634;
+    --orange-text: #c2410c;
+    --good: #1f7a45;
+    --bad: #b42318;
+    --code-bg: #152b76;
+    --code-fg: #ff8a63;
+    --font: "Proximity Nova", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, "Courier New", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1530; --surface: #17214a; --line: #2b3a75; --ink: #f1f4fb; --muted: #aab4d4;
+      --navy: #8fa3d8; --orange-text: #ff8a63; --good: #5ccf8c; --bad: #ff7b6e;
+      --code-bg: #0a1026; --code-fg: #ff8a63; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1530; --surface: #17214a; --line: #2b3a75; --ink: #f1f4fb; --muted: #aab4d4;
+    --navy: #8fa3d8; --orange-text: #ff8a63; --good: #5ccf8c; --bad: #ff7b6e;
+    --code-bg: #0a1026; --code-fg: #ff8a63; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 28px 20px 48px; }
+  h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); margin: 0 0 4px; letter-spacing: 0.01em; text-wrap: balance; }
+  .lede { margin: 0 0 22px; color: var(--muted); max-width: 62ch; }
+  .inputs { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; margin-bottom: 22px; }
+  label { display: block; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--navy); margin-bottom: 6px; }
+  input[type="text"] {
+    width: 100%; font: inherit; font-family: var(--mono); font-size: 1.05rem; padding: 12px 14px;
+    border: 2px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink);
+  }
+  input[type="text"]:focus-visible, button:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+  .inputs .main input { font-size: 1.35rem; font-weight: 700; }
+  .hint { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .card h2 { margin: 0; font-size: 1.15rem; letter-spacing: 0.06em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+  .badge { font-size: 0.7rem; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 999px; font-weight: 700; text-transform: uppercase; border: 1.5px solid currentColor; }
+  .badge.yes { color: var(--bad); }
+  .badge.key { color: var(--orange-text); }
+  .badge.no { color: var(--good); }
+  .method { margin: 0; color: var(--muted); font-size: 0.9rem; }
+  .out { position: relative; background: var(--code-bg); color: var(--code-fg); font-family: var(--mono); font-weight: 700; font-size: 0.95rem; padding: 14px; border-radius: 10px; min-height: 64px; overflow-wrap: anywhere; word-break: break-all; }
+  .copy { position: absolute; top: 6px; right: 6px; font: inherit; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid #ffffff55; background: #ffffff1a; color: #fff; cursor: pointer; }
+  .copy:hover { background: #ffffff33; }
+  .out .txt { display: block; padding-right: 54px; }
+  .reverse { border-top: 1px dashed var(--line); padding-top: 10px; font-size: 0.9rem; }
+  .reverse strong { display: block; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--navy); margin-bottom: 4px; }
+  .result { font-family: var(--mono); font-weight: 700; overflow-wrap: anywhere; }
+  .ok { color: var(--good); }
+  .fail { color: var(--bad); }
+  .keyrow { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+  .keyrow input { padding: 7px 10px; font-size: 0.9rem; }
+  button.btn { font: inherit; font-weight: 700; font-size: 0.85rem; padding: 8px 12px; border-radius: 8px; border: 2px solid var(--navy); background: transparent; color: var(--navy); cursor: pointer; }
+  button.btn:hover { background: var(--navy); color: var(--bg); }
+  .extra { margin-top: 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .panel { border: 2px solid var(--orange); border-radius: 14px; padding: 18px; min-width: 0; }
+  .panel h3 { margin: 0 0 6px; font-size: 1rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .panel p { margin: 0 0 10px; color: var(--muted); font-size: 0.9rem; }
+  .hashline { font-family: var(--mono); font-size: 0.82rem; overflow-wrap: anywhere; word-break: break-all; margin: 6px 0; }
+  .hashline b { display: block; font-family: var(--font); font-size: 0.78rem; letter-spacing: 0.02em; text-transform: none; color: var(--navy); }
+  .diff { background: #ff663444; border-radius: 2px; }
+  .stat { font-weight: 700; color: var(--orange-text); }
+  footer { margin-top: 26px; font-size: 0.82rem; color: var(--muted); max-width: 80ch; }
+  #warn { display: none; padding: 12px 14px; border-radius: 10px; background: #ff663422; border: 1px solid var(--orange); margin-bottom: 16px; }
+  @media (max-width: 860px) {
+    .cards, .extra { grid-template-columns: minmax(0, 1fr); }
+    .inputs { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (prefers-reduced-motion: no-preference) { .out .txt { transition: opacity .15s; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>One Word, Three Ways</h1>
+  <p class="lede">Type any word or sentence. See it encoded, encrypted and hashed at the same time, and what happens when you try to go backwards.</p>
+  <div id="warn">This browser blocked the built-in crypto tools. Open this file in a current Chrome, Edge, Firefox or Safari.</div>
+
+  <div class="inputs">
+    <div class="main"><label for="word">Your word</label><input id="word" type="text" value="Hello" autocomplete="off" spellcheck="false"></div>
+    <div><label for="key">Secret key</label><input id="key" type="text" value="tiger2026" autocomplete="off" spellcheck="false"><div class="hint">Used for encryption only</div></div>
+    <div><label for="salt">Salt</label><input id="salt" type="text" value="x7Kp" autocomplete="off" spellcheck="false"><div class="hint">Used for the password example</div></div>
+  </div>
+
+  <div class="cards">
+    <section class="card" aria-labelledby="h-enc">
+      <h2 id="h-enc">Encoding <span class="badge yes">Anyone can undo</span></h2>
+      <p class="method">Base64. A different format, not a secret. No key.</p>
+      <div class="out"><span class="txt" id="o-enc"></span><button class="copy" data-src="o-enc" type="button">Copy</button></div>
+      <div class="reverse"><strong>Decode it back</strong><span class="result ok" id="r-enc"></span></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-aes">
+      <h2 id="h-aes">Encryption <span class="badge key">Key needed</span></h2>
+      <p class="method">AES-256. Scrambled using your secret key.</p>
+      <div class="out"><span class="txt" id="o-aes"></span><button class="copy" data-src="o-aes" type="button">Copy</button></div>
+      <div class="reverse">
+        <strong>Decrypt it with this key</strong>
+        <div class="keyrow"><input id="key2" type="text" aria-label="Key to decrypt with" value="tiger2026" autocomplete="off" spellcheck="false"></div>
+        <div style="margin-top:8px"><span class="result" id="r-aes"></span></div>
+        <div class="hint">Try changing one letter of the key.</div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="h-sha">
+      <h2 id="h-sha">Hashing <span class="badge no">One-way</span></h2>
+      <p class="method">SHA-256. A fixed-length fingerprint. No key.</p>
+      <div class="out"><span class="txt" id="o-sha"></span><button class="copy" data-src="o-sha" type="button">Copy</button></div>
+      <div class="reverse">
+        <strong>Reverse it</strong>
+        <button class="btn" id="try" type="button">Try to reverse</button>
+        <div style="margin-top:8px"><span class="result" id="r-sha"></span></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="extra">
+    <section class="panel" aria-labelledby="h-salt">
+      <h3 id="h-salt">Password with a salt</h3>
+      <p>Treat your word as a password. A salt makes the stored hash different for every person.</p>
+      <div class="hashline"><b>Without salt</b><span id="h-nosalt"></span></div>
+      <div class="hashline"><b>With salt (salt + word)</b><span id="h-withsalt"></span></div>
+      <p style="margin-top:10px">Real systems use slower methods such as bcrypt or Argon2 so guessing is expensive.</p>
+    </section>
+    <section class="panel" aria-labelledby="h-av">
+      <h3 id="h-av">Change one letter</h3>
+      <p>Flip the case of the first letter and compare the two hashes.</p>
+      <div class="hashline"><b id="av-a-label"></b><span id="av-a"></span></div>
+      <div class="hashline"><b id="av-b-label"></b><span id="av-b"></span></div>
+      <p style="margin-top:10px"><span class="stat" id="av-stat"></span></p>
+    </section>
+  </div>
+
+  <footer>
+    Everything runs in your browser. Nothing you type is sent anywhere. The encryption uses a key made by hashing your secret key, and a fixed starting value so results match the slides. Real systems use a fresh random value every time.
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var subtle = window.crypto && window.crypto.subtle;
+  if (!subtle) $("warn").style.display = "block";
+  var enc = new TextEncoder();
+  var dec = new TextDecoder("utf-8", { fatal: true });
+
+  function toB64(bytes) { var s = ""; for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]); return btoa(s); }
+  function fromB64(str) { var s = atob(str); var b = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
+  function toHex(buf) { return Array.prototype.map.call(new Uint8Array(buf), function (x) { return x.toString(16).padStart(2, "0"); }).join(""); }
+  function sha256(str) { return subtle.digest("SHA-256", enc.encode(str)); }
+  async function aesKey(pass) { return subtle.importKey("raw", await sha256(pass), { name: "AES-CBC" }, false, ["encrypt", "decrypt"]); }
+  var IV = new Uint8Array(16);
+  async function encrypt(text, pass) { return toB64(new Uint8Array(await subtle.encrypt({ name: "AES-CBC", iv: IV }, await aesKey(pass), enc.encode(text)))); }
+  async function decrypt(b64, pass) { return dec.decode(await subtle.decrypt({ name: "AES-CBC", iv: IV }, await aesKey(pass), fromB64(b64))); }
+
+  function setText(id, t, cls) { var el = $(id); el.textContent = t; if (cls) el.className = "result " + cls; }
+  function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function diffHtml(a, b) { var out = ""; for (var i = 0; i < b.length; i++) out += a[i] === b[i] ? b[i] : '<span class="diff">' + b[i] + "</span>"; return out; }
+  function bitDiff(h1, h2) { var n = 0; for (var i = 0; i < h1.length; i++) { var x = parseInt(h1[i], 16) ^ parseInt(h2[i], 16); while (x) { n += x & 1; x >>= 1; } } return n; }
+  function flipFirst(w) { if (!w) return w; var c = w[0]; var f = c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase(); if (f === c) f = c + "!"; return f + w.slice(1); }
+
+  var ciphertext = "";
+  async function update() {
+    if (!subtle) return;
+    var word = $("word").value, key = $("key").value, salt = $("salt").value;
+    var b64 = toB64(enc.encode(word));
+    setText("o-enc", b64 || "(empty)");
+    try { setText("r-enc", dec.decode(fromB64(b64)) || "(empty)", "ok"); } catch (e) { setText("r-enc", "Could not decode", "fail"); }
+
+    ciphertext = await encrypt(word, key);
+    setText("o-aes", ciphertext);
+    await updateDecrypt();
+
+    var h = toHex(await sha256(word));
+    setText("o-sha", h);
+    setText("r-sha", "");
+
+    $("h-nosalt").textContent = h;
+    $("h-withsalt").textContent = toHex(await sha256(salt + word));
+
+    var alt = flipFirst(word), h2 = toHex(await sha256(alt));
+    $("av-a-label").textContent = 'SHA-256 of "' + word + '"';
+    $("av-b-label").textContent = 'SHA-256 of "' + alt + '"';
+    $("av-a").textContent = h;
+    $("av-b").innerHTML = diffHtml(h, h2);
+    $("av-stat").textContent = bitDiff(h, h2) + " of 256 bits changed from one letter.";
+  }
+  async function updateDecrypt() {
+    try { setText("r-aes", await decrypt(ciphertext, $("key2").value) || "(empty)", "ok"); }
+    catch (e) { setText("r-aes", "Wrong key: only gibberish, nothing readable.", "fail"); }
+  }
+
+  $("word").addEventListener("input", update);
+  $("key").addEventListener("input", function () { $("key2").value = $("key").value; update(); });
+  $("salt").addEventListener("input", update);
+  $("key2").addEventListener("input", updateDecrypt);
+  $("try").addEventListener("click", function () { setText("r-sha", "No way back. The only option is guessing words and comparing their hashes.", "fail"); });
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest && ev.target.closest(".copy"); if (!b) return;
+    var text = $(b.getAttribute("data-src")).textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1200); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () {});
+  });
+  update();
+})();
+</script>
+</body>
+</html>
